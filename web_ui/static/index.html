@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RenderCV Web UI</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="toolbar">
+      <div class="brand">RenderCV 可视化编辑器</div>
+      <div class="controls">
+        <select id="theme-select">
+          <option value="classic">Classic</option>
+        </select>
+        <button id="mode-toggle" type="button">切换 YAML 高级模式</button>
+        <button id="upload-btn" type="button">上传 YAML</button>
+        <button id="download-yaml-btn" type="button">下载 YAML</button>
+        <button id="download-pdf-btn" type="button">下载 PDF</button>
+        <input type="file" id="yaml-file-input" accept=".yaml,.yml" hidden>
+      </div>
+    </header>
+    <main class="workspace">
+      <section class="editor">
+        <div id="form-editor" class="editor-pane"></div>
+        <textarea id="yaml-editor" class="editor-pane hidden" spellcheck="false"></textarea>
+      </section>
+      <section class="preview">
+        <div id="status">准备就绪</div>
+        <div id="preview-container">
+          <img id="preview-img" alt="CV preview" hidden>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
