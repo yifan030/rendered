@@ -65,6 +65,10 @@ full = [
   "rendercv-fonts>=0.5.1",  # Font files for RenderCV
   "packaging>=26.0",  # For version checking
 ]
+web = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.32.0",
+]
 
 [project.urls]
 Changelog = "https://docs.rendercv.com/changelog"
