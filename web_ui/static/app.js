@@ -121,7 +121,7 @@ const FORM_SCHEMA = [
     title: '基础信息',
     fields: [
       { name: 'name', label: '姓名', type: 'text' },
-      { name: 'label', label: '职位头衔', type: 'text' },
+      { name: 'headline', label: '职位头衔', type: 'text' },
       { name: 'location', label: '地点', type: 'text' },
       { name: 'email', label: '邮箱', type: 'email' },
       { name: 'phone', label: '电话', type: 'text' },
