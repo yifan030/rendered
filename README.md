@@ -168,3 +168,13 @@ rendercv render "John_Doe_CV.yaml"
 ```
 
 For more details, see the [user guide](https://docs.rendercv.com/user_guide/).
+
+## Local Web UI
+
+A browser-based editor is available in `web_ui/`. To start it:
+
+```bash
+uv run python -m web_ui
+```
+
+Then open http://localhost:8000 in your browser. You can edit your CV using the form interface or switch to YAML advanced mode, preview the rendered PDF/PNG live, and download the results.
