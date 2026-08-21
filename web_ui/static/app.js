@@ -380,32 +380,40 @@ function formDataToYaml(data) {
     });
   }
   const sectionKeys = ['个人简介', '教育经历', '工作经历', '项目经历', '论文发表', '荣誉奖项', '技能'];
-  const hasAnySection = data['个人简介'] || sectionKeys.slice(1).some(k => data[k] && data[k].length);
-  if (hasAnySection) {
-    lines.push('  sections:');
-    if (data['个人简介']) {
-      lines.push('    个人简介:');
-      data['个人简介'].split('\n').forEach((line) => {
-        if (line.trim()) lines.push(`      - ${quoteYaml(line.trim())}`);
-      });
-    }
-    sectionKeys.slice(1).forEach((key) => {
-      const items = data[key];
-      if (!items || !items.length) return;
-      lines.push(`    ${key}:`);
-      items.forEach((item) => {
-        lines.push('      -');
-        Object.entries(item).forEach(([k, v]) => {
-          if (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) return;
-          if (Array.isArray(v)) {
-            lines.push(`        ${k}:`);
-            v.forEach((line) => lines.push(`          - ${quoteYaml(line)}`));
-          } else {
-            lines.push(`        ${k}: ${quoteYaml(v)}`);
-          }
-        });
+  const sectionLines = [];
+  if (data['个人简介']) {
+    sectionLines.push('    个人简介:');
+    data['个人简介'].split('\n').forEach((line) => {
+      if (line.trim()) sectionLines.push(`      - ${quoteYaml(line.trim())}`);
+    });
+  }
+  sectionKeys.slice(1).forEach((key) => {
+    const items = data[key];
+    if (!items || !items.length) return;
+    // Skip entries that have no meaningful fields set.
+    const nonEmptyItems = items.filter((item) =>
+      Object.values(item).some((v) =>
+        v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && !v.length)
+      )
+    );
+    if (!nonEmptyItems.length) return;
+    sectionLines.push(`    ${key}:`);
+    nonEmptyItems.forEach((item) => {
+      sectionLines.push('      -');
+      Object.entries(item).forEach(([k, v]) => {
+        if (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) return;
+        if (Array.isArray(v)) {
+          sectionLines.push(`        ${k}:`);
+          v.forEach((line) => sectionLines.push(`          - ${quoteYaml(line)}`));
+        } else {
+          sectionLines.push(`        ${k}: ${quoteYaml(v)}`);
+        }
       });
     });
+  });
+  if (sectionLines.length) {
+    lines.push('  sections:');
+    lines.push(...sectionLines);
   }
   return lines.join('\n');
 }
