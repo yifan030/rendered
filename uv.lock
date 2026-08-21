@@ -1283,6 +1283,7 @@ full = [
 ]
 web = [
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -1318,6 +1319,7 @@ update-entry-figures = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", marker = "extra == 'web'", specifier = ">=0.115.0" },
+    { name = "httpx", marker = "extra == 'web'", specifier = ">=0.27.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "markdown", specifier = ">=3.10.2" },
     { name = "packaging", marker = "extra == 'full'", specifier = ">=26.0" },
