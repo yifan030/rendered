@@ -35,3 +35,17 @@ def test_render_endpoint():
     assert data["success"] is True
     assert data["files"]["pdf"].startswith("data:application/pdf;base64,")
     assert len(data["files"]["png"]) >= 1
+
+
+def test_parse_yaml_endpoint():
+    yaml_text = """cv:
+  name: Bob
+  sections:
+    Experience:
+      - Software Engineer at Company X, 2020-2023
+"""
+    response = client.post("/api/parse-yaml", json={"yaml": yaml_text})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["data"]["cv"]["name"] == "Bob"
+    assert data["data"]["cv"]["sections"]["Experience"][0] == "Software Engineer at Company X, 2020-2023"

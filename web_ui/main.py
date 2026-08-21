@@ -5,6 +5,7 @@ import pathlib
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from ruamel.yaml import YAML
 
 from web_ui.renderer import render_yaml
 
@@ -60,6 +61,21 @@ class RenderRequest(BaseModel):
     theme: str | None = None
 
 
+class ParseYamlRequest(BaseModel):
+    """Request body for the /api/parse-yaml endpoint."""
+
+    yaml: str
+
+
+def _to_plain(obj):
+    """Recursively convert ruamel.yaml CommentedMap/Seq to plain dict/list."""
+    if isinstance(obj, dict):
+        return {k: _to_plain(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_to_plain(v) for v in obj]
+    return obj
+
+
 @app.get("/api/themes")
 def get_themes():
     """Return the list of built-in RenderCV themes."""
@@ -76,6 +92,14 @@ def get_sample():
 def render_endpoint(request: RenderRequest):
     """Render the provided YAML and return generated files."""
     return render_yaml(request.yaml, request.theme)
+
+
+@app.post("/api/parse-yaml")
+def parse_yaml_endpoint(request: ParseYamlRequest):
+    """Parse a YAML string into plain JSON for form population."""
+    yaml = YAML()
+    data = yaml.load(request.yaml)
+    return {"data": _to_plain(data)}
 
 
 static_dir = pathlib.Path(__file__).parent / "static"
