@@ -131,13 +131,13 @@ const FORM_SCHEMA = [
     ],
   },
   {
-    key: 'summary',
+    key: '个人简介',
     title: '个人简介',
     single: true,
     fields: [{ name: 'text', label: '简介', type: 'textarea' }],
   },
   {
-    key: 'education',
+    key: '教育经历',
     title: '教育经历',
     list: true,
     fields: [
@@ -151,7 +151,7 @@ const FORM_SCHEMA = [
     ],
   },
   {
-    key: 'experience',
+    key: '工作经历',
     title: '工作经历',
     list: true,
     fields: [
@@ -164,7 +164,7 @@ const FORM_SCHEMA = [
     ],
   },
   {
-    key: 'projects',
+    key: '项目经历',
     title: '项目经历',
     list: true,
     fields: [
@@ -176,7 +176,7 @@ const FORM_SCHEMA = [
     ],
   },
   {
-    key: 'skills',
+    key: '技能',
     title: '技能',
     list: true,
     fields: [
@@ -185,7 +185,7 @@ const FORM_SCHEMA = [
     ],
   },
   {
-    key: 'publications',
+    key: '论文发表',
     title: '论文发表',
     list: true,
     fields: [
@@ -197,7 +197,7 @@ const FORM_SCHEMA = [
     ],
   },
   {
-    key: 'awards',
+    key: '荣誉奖项',
     title: '荣誉奖项',
     list: true,
     fields: [
@@ -362,7 +362,12 @@ function quoteYaml(value) {
 }
 
 function formDataToYaml(data) {
-  const lines = ['cv:'];
+  const lines = [
+    'locale:',
+    '  language: mandarin_chinese',
+    '',
+    'cv:',
+  ];
   const basicFields = ['name', 'label', 'location', 'email', 'phone', 'website'];
   basicFields.forEach((key) => {
     if (data[key]) lines.push(`  ${key}: ${quoteYaml(data[key])}`);
@@ -374,16 +379,17 @@ function formDataToYaml(data) {
       lines.push(`      username: ${sn.username}`);
     });
   }
-  const hasAnySection = data.summary || ['education', 'experience', 'projects', 'skills', 'publications', 'awards'].some(k => data[k] && data[k].length);
+  const sectionKeys = ['个人简介', '教育经历', '工作经历', '项目经历', '论文发表', '荣誉奖项', '技能'];
+  const hasAnySection = data['个人简介'] || sectionKeys.slice(1).some(k => data[k] && data[k].length);
   if (hasAnySection) {
     lines.push('  sections:');
-    if (data.summary) {
-      lines.push('    summary:');
-      data.summary.split('\n').forEach((line) => {
+    if (data['个人简介']) {
+      lines.push('    个人简介:');
+      data['个人简介'].split('\n').forEach((line) => {
         if (line.trim()) lines.push(`      - ${quoteYaml(line.trim())}`);
       });
     }
-    ['education', 'experience', 'projects', 'publications', 'awards', 'skills'].forEach((key) => {
+    sectionKeys.slice(1).forEach((key) => {
       const items = data[key];
       if (!items || !items.length) return;
       lines.push(`    ${key}:`);

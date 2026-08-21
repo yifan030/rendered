@@ -23,34 +23,39 @@ THEMES = [
     {"id": "opal", "name": "Opal"},
 ]
 
-SAMPLE_YAML = """cv:
-  name: John Doe
-  location: San Francisco, CA
-  email: john.doe@email.com
-  website: https://rendercv.com
+SAMPLE_YAML = """locale:
+  language: mandarin_chinese
+
+cv:
+  name: 张三
+  location: 北京
+  email: zhangsan@example.com
+  phone: +86 138 0000 0000
+  website: https://example.com
   social_networks:
     - network: LinkedIn
-      username: rendercv
+      username: zhangsan
     - network: GitHub
-      username: rendercv
+      username: zhangsan
   sections:
-    summary:
-      - RenderCV reads a CV written in a YAML file, and generates a PDF with professional typography.
-    experience:
-      - company: Example Inc.
-        position: Software Engineer
+    个人简介:
+      - 我是一名软件工程师，擅长后端开发与团队协作。
+    工作经历:
+      - company: 科技有限公司
+        position: 软件工程师
         start_date: 2020-01
         end_date: present
-        location: San Francisco, CA
+        location: 北京
         highlights:
-          - Built scalable backend services.
-    education:
-      - institution: Stanford University
-        degree: MS
-        area: Computer Science
+          - 开发核心后端服务
+          - 带领 5 人团队完成重点项目
+    教育经历:
+      - institution: 清华大学
+        degree: 硕士
+        area: 计算机科学与技术
         start_date: 2018-09
         end_date: 2020-06
-        location: Stanford, CA
+        location: 北京
 """
 
 
