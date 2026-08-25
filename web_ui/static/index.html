@@ -1,39 +1,27 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RenderCV Web UI</title>
-  <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-  <div class="app">
-    <header class="toolbar">
-      <div class="brand">RenderCV 可视化编辑器</div>
-      <div class="controls">
-        <select id="theme-select">
-          <option value="classic">Classic</option>
-        </select>
-        <button id="mode-toggle" type="button">切换 YAML 高级模式</button>
-        <button id="upload-btn" type="button">上传 YAML</button>
-        <button id="download-yaml-btn" type="button">下载 YAML</button>
-        <button id="download-pdf-btn" type="button">下载 PDF</button>
-        <input type="file" id="yaml-file-input" accept=".yaml,.yml" hidden>
-      </div>
-    </header>
-    <main class="workspace">
-      <section class="editor">
-        <div id="form-editor" class="editor-pane"></div>
-        <textarea id="yaml-editor" class="editor-pane hidden" spellcheck="false"></textarea>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <title>RenderCV 编辑器</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="app-shell" data-product="rendercv">
+      <aside id="sidebar" class="sidebar" aria-label="简历导航"></aside>
+      <section class="main-shell">
+        <header id="top-toolbar" class="top-toolbar" aria-label="工作台工具栏"></header>
+        <nav id="workspace-tabs" class="workspace-tabs" aria-label="工作区栏目" role="tablist"></nav>
+        <main id="workspace" class="workspace">
+          <section id="editor-panel" class="editor-panel" role="tabpanel" aria-live="polite"></section>
+          <div id="splitter" class="splitter" role="separator" aria-label="调整编辑器和预览宽度" aria-orientation="vertical" tabindex="0"></div>
+          <section id="preview-panel" class="preview-panel" aria-label="简历预览"></section>
+        </main>
       </section>
-      <section class="preview">
-        <div id="status">准备就绪</div>
-        <div id="preview-container">
-          <img id="preview-img" alt="CV preview" hidden>
-        </div>
-      </section>
-    </main>
-  </div>
-  <script src="/app.js"></script>
-</body>
+    </div>
+    <input id="yaml-file-input" type="file" accept=".yaml,.yml" hidden>
+    <script src="/editor-model.js"></script>
+    <script src="/app.js"></script>
+  </body>
 </html>

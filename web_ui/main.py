@@ -2,60 +2,81 @@
 
 import pathlib
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from ruamel.yaml import YAML
 
+from rendercv.schema.models.design.built_in_design import (
+    available_themes,
+    built_in_design_adapter,
+)
+from rendercv.schema.sample_generator import dictionary_to_yaml
+from rendercv.schema.yaml_reader import read_yaml
 from web_ui.renderer import render_yaml
 
 app = FastAPI(title="RenderCV Web UI")
 
-THEMES = [
-    {"id": "classic", "name": "Classic"},
-    {"id": "moderncv", "name": "Moderncv"},
-    {"id": "sb2nov", "name": "Sb2nov"},
-    {"id": "engineeringresumes", "name": "Engineeringresumes"},
-    {"id": "engineeringclassic", "name": "Engineeringclassic"},
-    {"id": "harvard", "name": "Harvard"},
-    {"id": "ember", "name": "Ember"},
-    {"id": "ink", "name": "Ink"},
-    {"id": "opal", "name": "Opal"},
-]
+THEMES = [{"id": theme, "name": theme.capitalize()} for theme in available_themes]
 
 SAMPLE_YAML = """locale:
   language: mandarin_chinese
 
 cv:
-  name: 张三
-  location: 北京
-  email: zhangsan@example.com
-  phone: +86 138 0000 0000
-  website: https://example.com
+  name: "徐梦博"
+  email: "202311143017@stu.qlu.edu.cn"
+  phone: "+86 178 5411 6985"
   social_networks:
-    - network: LinkedIn
-      username: zhangsan
-    - network: GitHub
-      username: zhangsan
+    - network: "GitHub"
+      username: "yifan030"
   sections:
-    个人简介:
-      - 我是一名软件工程师，擅长后端开发与团队协作。
-    工作经历:
-      - company: 科技有限公司
-        position: 软件工程师
-        start_date: 2020-01
-        end_date: present
-        location: 北京
-        highlights:
-          - 开发核心后端服务
-          - 带领 5 人团队完成重点项目
     教育经历:
-      - institution: 清华大学
-        degree: 硕士
-        area: 计算机科学与技术
-        start_date: 2018-09
-        end_date: 2020-06
-        location: 北京
+      - institution: "齐鲁工业大学"
+        area: "人工智能"
+        degree: "BS"
+        start_date: "2023-09"
+        end_date: "2027-06"
+    实习经历:
+      - company: "联想集团（供应链 SCQM 部门）"
+        position: "Agent 开发实习生"
+        location: "北京"
+        start_date: "2026-03"
+        end_date: "2026-06"
+        summary: "核心方向：制造质量领域知识图谱体系建设 + 企业合规证书管理系统后端开发"
+        highlights:
+          - "**质多星 — 制造质量知识图谱微服务**：基于 LlamaIndex + Neo4j 搭建 GraphRAG 全链路流水线，设计 PFMEA 七层知识本体（产品 → 流程 → 工序 → 失效模式 → 原因 → 控制措施 → 反应计划），涵盖 16 类实体、15 类关系，实现质量文档从非结构化文本到知识图谱的自动抽取入库"
+          - "引入 Redis + RQ 异步任务队列处理长耗时 CSV 入库链路，设计任务去重、TTL 过期、状态轮询完整异步机制"
+          - "设计 Neo4j 向量索引 + BGE-M3 Embedding + 编辑距离 + Union-Find 聚类的自动消歧方案，三档分流补齐数据质量闭环，消歧准确率 82%"
+          - "在内部评测集上检索召回率达 90%，提供 API 供内部 Agent 调用，服务工程师质量审核场景"
+          - "**企业合规证书管理系统 — 后端开发**：基于 SpringBoot + PostgreSQL 完成后端落地，设计 BU → Part → Supplier → Base → Standard → ProductCert 六层供应链数据模型"
+          - "实现证书全生命周期管理、供应商多租户数据隔离、JWT + BCrypt 无状态认证，双通道邮件智能路由，配合每日定时证书到期扫描形成合规监控闭环"
+          - "基于 LangGraph 编排“数据清洗 → 文档切分 → LLM 抽取 → 实体归一 → 图入库 → 向量入库”全链路 DAG，节点级实现 timeout / retry / fallback 与失败隔离，支持批量任务与可重复执行"
+          - "设计 Function Calling 工程化方案：基于 JSON Schema / Pydantic 做实体关系入参校验与自动纠错重试，降低 LLM 非结构化输出漂移"
+      - company: "森诺科技有限公司"
+        position: "Agent 开发实习生"
+        start_date: "2025-10"
+        end_date: "2026-03"
+        summary: "核心方向：工程咨询知识管理系统的 RAG 流程优化与 GraphRAG 技术落地（森诺智脑 — 文档审查与知识库问答）"
+        highlights:
+          - "基于实体关系图谱做多层级社区划分与社区报告生成，对 100+ 万字工程文档进行主题聚类，使复杂跨文档问答场景 Top-5 命中率从约 60% 提升至 85%+（业务人员构建数据集测评）"
+          - "构建“图结构为主体、向量与 Neo4j 为增强”的混合检索方案：在父子块向量检索基础上，对文档块、实体描述、社区报告进行多粒度 Embedding 统一写入 Weaviate，按需同步 Neo4j 用于复杂路径分析"
+    项目经历:
+      - name: "Pick — 多模态本地生活导购 Agent 系统"
+        start_date: "2026-03"
+        end_date: "2026-06"
+        summary: "LangGraph / FastAPI / SpringBoot / Milvus / Neo4j / Kafka / Redis · [github.com/yifan030/Pick](https://github.com/yifan030/Pick)"
+        highlights:
+          - "独立设计并开发的 MultiAgent 系统，支持自然语言交互完成店铺搜索、下单、退款等全流程，配套订阅、秒杀等后端设施"
+          - "多智能体架构：基于 LangGraph StateGraph 手写 Supervisor + Workers + Synthesizer 三层 ReAct 循环，Supervisor 实现关键词复杂度两级路由，Send API 实现多 Worker 真正并行执行"
+          - "12 个 Agent 工具：覆盖推荐（双集合 RAG 融合）、商业（下单/退款/查单）、社交（收藏/提醒）、门店（排队/预约）四大类，敏感操作实现 HITL 人工确认机制"
+          - "6 阶段记忆管线：对话结束 → 事件提取 → 向量嵌入 → 预过滤 → Profile 更新（7 种 Delta 操作 + 置信度管理） → 会话摘要 → 案例提取，含硬约束保护与冷启动策略"
+          - "3 路融合检索 + 后端秒杀：语义搜索 + BM25 + Neo4j 子图，Milvus 双索引；Lua 原子扣库存 → Kafka 异步落库 → 失败回滚；Bloom Filter + 令牌桶限流 + 分布式锁三层防护"
+    相关技能:
+      - label: "AI Agent & RAG"
+        details: "熟练使用 LangGraph / LangChain / LlamaIndex 构建 Agent 系统，掌握 MultiAgent 协作、ReAct 循环、工具编排与记忆管理全链路；具备 GraphRAG 从 0 到 1 落地能力，熟悉 Neo4j / Weaviate / Milvus，掌握多路检索融合、实体归一、社区检测等优化手段"
+      - label: "后端开发"
+        details: "扎实的 Java 基础，掌握 SpringBoot / MyBatis-Plus / JPA，理解事务、锁、索引、MVCC 等核心特性；熟悉 Redis（缓存/分布式锁/原子操作）、Kafka 异步消息、ShardingSphere 分库分表"
+      - label: "DevOps"
+        details: "熟悉 PostgreSQL / MySQL 数据库设计与 Flyway 版本管理，具备独立搭建完整后端项目能力"
 """
 
 
@@ -70,6 +91,12 @@ class ParseYamlRequest(BaseModel):
     """Request body for the /api/parse-yaml endpoint."""
 
     yaml: str
+
+
+class SerializeYamlRequest(BaseModel):
+    """Request body for the /api/serialize-yaml endpoint."""
+
+    data: dict
 
 
 def _to_plain(obj):
@@ -102,9 +129,32 @@ def render_endpoint(request: RenderRequest):
 @app.post("/api/parse-yaml")
 def parse_yaml_endpoint(request: ParseYamlRequest):
     """Parse a YAML string into plain JSON for form population."""
-    yaml = YAML()
-    data = yaml.load(request.yaml)
-    return {"data": _to_plain(data)}
+    try:
+        data = read_yaml(request.yaml)
+    except Exception as exc:
+        return {"success": False, "error": str(exc), "data": None}
+    return {"success": True, "error": None, "data": _to_plain(data)}
+
+
+@app.post("/api/serialize-yaml")
+def serialize_yaml_endpoint(request: SerializeYamlRequest):
+    """Serialize a plain JSON object back into a YAML string.
+
+    Why:
+        The editor treats the parsed YAML object as the single source of truth.
+        Form and design edits mutate that object, and this endpoint turns it
+        back into YAML text so unknown fields and the design block survive.
+    """
+    return {"success": True, "error": None, "yaml": dictionary_to_yaml(request.data)}
+
+
+@app.get("/api/design/{theme}")
+def get_design(theme: str):
+    """Return the full effective design configuration for a built-in theme."""
+    if theme not in available_themes:
+        raise HTTPException(status_code=404, detail=f"Unknown theme: {theme}")
+    design = built_in_design_adapter.validate_python({"theme": theme})
+    return {"design": design.model_dump(mode="json", warnings=False)}
 
 
 static_dir = pathlib.Path(__file__).parent / "static"
