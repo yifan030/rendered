@@ -169,21 +169,34 @@ rendercv render "John_Doe_CV.yaml"
 
 For more details, see the [user guide](https://docs.rendercv.com/user_guide/).
 
-## Local Web UI
+## Web UI（浏览器编辑器）
 
-A browser-based editor is available in `web_ui/`. To start it:
+项目内置一个浏览器编辑器（`web_ui/`）。FastAPI 后端同时伺服 API（`/api/*`）与静态前端页面（`/`），所以无论是本地启动还是 Docker 部署，**一个进程/容器就能跑起整个项目**。
+
+### 本地启动
+
+前置要求：Python 3.12+ 与 [uv](https://docs.astral.sh/uv/)（本项目用 uv 管理依赖）。
 
 ```bash
 uv run python -m web_ui
 ```
 
-Then open http://localhost:8000 in your browser. You can edit your CV using the form interface or switch to YAML advanced mode, preview the rendered PDF/PNG live, and download the results.
+然后打开 http://localhost:8000。编辑器支持表单模式或 YAML 高级模式编辑简历，实时预览渲染出的 PDF/PNG，并可下载结果。
 
-Deploy the web UI with Docker — one container serves both the API and the frontend:
+### Docker 部署（单容器）
+
+一个容器同时提供 API 与前端页面：
 
 ```bash
 docker compose up -d --build
-# open http://localhost:8000
+# 然后打开 http://localhost:8000
 ```
 
-Or build the image directly: `docker build -f Dockerfile.web -t rendercv-web .`
+也可以直接构建并运行镜像：
+
+```bash
+docker build -f Dockerfile.web -t rendercv-web .
+docker run -p 8000:8000 rendercv-web
+```
+
+说明：镜像安装 `full` + `web` 两个依赖组（渲染 PDF/PNG 所需的 Typst 与字体、服务所需的 FastAPI/Uvicorn），以非 root 用户运行；`web_ui/` 不在 wheel 内，构建时会单独拷贝进镜像。
