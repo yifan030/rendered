@@ -178,3 +178,12 @@ uv run python -m web_ui
 ```
 
 Then open http://localhost:8000 in your browser. You can edit your CV using the form interface or switch to YAML advanced mode, preview the rendered PDF/PNG live, and download the results.
+
+Deploy the web UI with Docker — one container serves both the API and the frontend:
+
+```bash
+docker compose up -d --build
+# open http://localhost:8000
+```
+
+Or build the image directly: `docker build -f Dockerfile.web -t rendercv-web .`

@@ -1,0 +1,26 @@
+# RenderCV Web UI — single container deployment.
+#
+# The FastAPI backend serves both the API (/api/*) and the static frontend (/),
+# so one container is enough. Usage:
+#
+#   docker compose up -d --build
+#   open http://localhost:8000
+
+services:
+  rendercv-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    image: rendercv-web:latest
+    container_name: rendercv-web
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    # Uncomment once the SQLite persistence feature lands
+    # (web_ui/data/rendercv.db). The directory must be pre-created and owned
+    # by the non-root rendercv user (uid 999) before mounting.
+    # volumes:
+    #   - rendercv-web-data:/app/web_ui/data
+
+# volumes:
+#   rendercv-web-data:
